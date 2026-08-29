@@ -1,6 +1,6 @@
 # Picai
 .DS_Store
-/src/data/
+/src/data/raw/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
