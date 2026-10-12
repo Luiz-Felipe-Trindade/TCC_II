@@ -56,5 +56,36 @@ def find_whole_gland_mask(
 
     if not matches:
         return None
-
     return matches[0]
+
+def discover_t2w_cases() -> list[tuple[str, str]]:
+    """
+    Discover PI-CAI cases that contain a T2W MRI file.
+
+    Returns
+    -------
+    list[tuple[str, str]]
+        List of (patient_id, study_id) pairs.
+    """
+    cases = []
+
+    for patient_dir in PICAI_DIR.iterdir():
+        if not patient_dir.is_dir():
+            continue
+
+        patient_id = patient_dir.name
+
+        for t2w_path in patient_dir.glob("*_t2w.mha"):
+            case_id = t2w_path.name.replace("_t2w.mha", "")
+
+            parts = case_id.split("_")
+
+            if len(parts) != 2:
+                continue
+
+            _, study_id = parts
+
+            cases.append(
+                (patient_id, study_id)
+            )
+    return sorted(cases)

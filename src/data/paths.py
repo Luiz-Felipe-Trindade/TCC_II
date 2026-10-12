@@ -31,4 +31,9 @@ CSPCA_LESION_DIR = (
 )
 
 PROCESSED_DIR = DATA_DIR / "processed"
+
 FEATURES_DIR = DATA_DIR / "features"
+
+SPLITS_DIR = PROCESSED_DIR / "splits"
+
+CHECKPOINTS_DIR = PROJECT_ROOT / "results" / "checkpoints"

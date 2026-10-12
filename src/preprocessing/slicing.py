@@ -3,18 +3,17 @@ import numpy as np
 
 def get_positive_slices(mask: np.ndarray) -> list[int]:
     """
-    Return the indices of slices containing at least
-    one positive pixel in the segmentation mask.
+    Return slice indices containing at least one positive mask pixel.
 
     Parameters
     ----------
     mask : np.ndarray
-        Three-dimensional segmentation mask with shape (z, y, x).
+        Three-dimensional binary mask with shape (z, y, x).
 
     Returns
     -------
     list[int]
-        Indices of slices containing the region of interest.
+        Slice indices containing the region of interest.
     """
     return [
         index
@@ -25,18 +24,17 @@ def get_positive_slices(mask: np.ndarray) -> list[int]:
 
 def get_positive_pixel_count(mask: np.ndarray) -> dict[int, int]:
     """
-    Count positive mask pixels for each slice containing
-    the region of interest.
+    Count positive mask pixels for each positive slice.
 
     Parameters
     ----------
     mask : np.ndarray
-        Three-dimensional segmentation mask.
+        Three-dimensional binary mask.
 
     Returns
     -------
     dict[int, int]
-        Slice index mapped to its number of positive pixels.
+        Mapping between slice index and number of positive pixels.
     """
     positive_slices = get_positive_slices(mask)
 
@@ -51,16 +49,15 @@ def select_slices_with_context(
     context: int = 2,
 ) -> list[int]:
     """
-    Select all slices containing the region of interest
-    and include additional contextual slices before and after it.
+    Select all positive slices and include contextual slices
+    before and after the region of interest.
 
     Parameters
     ----------
     mask : np.ndarray
-        Three-dimensional segmentation mask.
+        Three-dimensional binary mask.
     context : int, default=2
-        Number of additional slices included before and after
-        the positive region.
+        Number of additional slices before and after the ROI.
 
     Returns
     -------

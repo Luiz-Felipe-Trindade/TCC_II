@@ -1,7 +1,14 @@
 # Picai
 .DS_Store
 /src/data/raw/
-/src/data/processed
+/src/data/processed/
+
+/results/checkpoints/
+/results/segmentation/predicted_masks/
+/results/segmentation/predicted_masks_batch_test/
+/results/segmentation/predicted_masks_test/
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -10,6 +17,8 @@ __pycache__/
 
 # C extensions
 *.so
+
+*.pth
 
 # Distribution / packaging 
 .Python
@@ -135,8 +144,10 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv-radiomics
 env/
 venv/
+venv-radiomics/
 ENV/
 env.bak/
 venv.bak/
