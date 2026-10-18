@@ -1,520 +1,202 @@
-# PI-CAI — Pipeline de Segmentação, Radiômica e Classificação
+# PI-CAI — Segmentação, Radiômica e Classificação de csPCa
 
-Projeto de desenvolvimento do Trabalho de Conclusão de Curso voltado à investigação de uma pipeline híbrida para **detecção de câncer de próstata clinicamente significativo (csPCa)** em exames de **Ressonância Magnética Biparamétrica (RMbp)**.
+Projeto de Trabalho de Conclusão de Curso que investiga uma pipeline de segmentação da próstata, extração de características radiômicas e classificação da presença de câncer de próstata clinicamente significativo (**csPCa**) por exame.
 
-A proposta combina **Deep Learning**, **Radiômica** e **Machine Learning**, utilizando o dataset **PI-CAI** como base para desenvolvimento e avaliação.
+A implementação atual utiliza imagens **T2W** do PI-CAI, uma **U-Net 2D** em PyTorch, **PyRadiomics** e os classificadores **Regressão Logística, Random Forest e XGBoost**. A segmentação é anatômica, da glândula inteira; a classificação usa o desfecho `case_csPCa`, sem localizar lesões. Embora o dataset inclua outras sequências, a pipeline atual utiliza T2W.
 
----
+## Estado atual
 
-## 🎯 Objetivo
+- Preparação dos dados, treinamento, avaliação e inferência da U-Net implementados.
+- Máscaras preditas reconstruídas em volumes 3D e utilizadas na extração radiômica.
+- Tabelas radiômicas disponíveis para glândula inteira predita, zonas periférica e de transição, glândula inteira de referência e união das zonas.
+- Comparações entre classificadores e representações anatômicas disponíveis em notebooks e em `results/`.
+- Reconstrução do experimento histórico de XGBoost preservada separadamente.
+- Divisão alternativa agrupada por paciente disponível; a migração e a reavaliação completa da pipeline ainda precisam ser consolidadas.
 
-Desenvolver e avaliar uma pipeline computacional capaz de utilizar imagens de RMbp para:
+### Situação da validação
 
-1. realizar a segmentação das regiões de interesse;
-2. extrair características quantitativas por meio de radiômica;
-3. selecionar as características mais relevantes;
-4. classificar os casos utilizando XGBoost;
-5. avaliar o desempenho da abordagem por meio de métricas de segmentação e classificação.
+O arquivo original `src/data/processed/splits/patient_splits.csv` contém **1.500 exames de 1.476 pacientes**, distribuídos em **1.050 / 225 / 225 exames** para treino, validação e teste. A divisão original foi estratificada por `case_csPCa`, com semente 42, mas **10 pacientes aparecem em mais de uma partição**.
 
-A proposta busca equilibrar **desempenho, interpretabilidade e custo computacional**.
+Os notebooks principais ainda apontam para essa divisão original. Os resultados associados a ela devem ser tratados como históricos e exploratórios, com risco de vazamento entre pacientes.
 
----
+O arquivo `patient_splits_grouped_v2.csv`, no mesmo diretório, contém **1.049 / 226 / 225 exames**, com rótulos `train`, `val` e `test`, e **nenhum paciente compartilhado entre partições**. Sua utilização exige adequar os consumidores que esperam o rótulo `validation`, além de retreinar e reavaliar os modelos. A existência desse arquivo não indica que os resultados já tenham sido recalculados.
 
-## 🧠 Pipeline proposta
+## Pipeline implementada
 
 ```text
-                    PI-CAI
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ Pré-processamento│
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │      U-Net      │
-              │   Segmentação   │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │     Máscara     │
-              │  Região de ROI  │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │    Radiômica    │
-              │  Extração de    │
-              │    Features     │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ Seleção Features│
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │     XGBoost     │
-              │   Classificação │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │    Avaliação    │
-              └─────────────────┘
+Volumes T2W + máscaras anatômicas + informações clínicas
+                         │
+                         ▼
+Validação de geometria e preparação de slices 2D (256 × 256)
+                         │
+                         ▼
+U-Net 2D → inferência → máscara predita 3D da glândula inteira
+                         │
+                         ▼
+PyRadiomics no volume T2W original e na máscara 3D
+                         │
+                         ▼
+Regressão Logística / Random Forest / XGBoost
+                         │
+                         ▼
+Seleção na validação → avaliação de csPCa por exame
 ```
 
----
+As análises adicionais utilizam máscaras anatômicas de referência de **PZ** (zona periférica), **TZ** (zona de transição), glândula inteira e união PZ/TZ. **PZ + TZ** é a concatenação das características das duas zonas; **união PZ/TZ** é a extração sobre uma única máscara formada pela união.
 
-## 📊 Dataset
-
-O projeto utiliza o **PI-CAI (Prostate Imaging: Cancer AI)**, um dataset voltado ao desenvolvimento e avaliação de métodos de Inteligência Artificial para detecção de câncer de próstata em imagens de ressonância magnética.
-
-Os dados utilizados no projeto estão organizados em **5 folds**.
-
-### Imagens
-
-Entre as modalidades/sequências presentes estão:
-
-* T2W;
-* ADC;
-* DWI/HBV;
-* demais arquivos associados aos estudos.
-
-Os exames são disponibilizados em formatos como `.mha`.
-
-### Labels
-
-As informações complementares estão organizadas no repositório de labels do PI-CAI e incluem:
-
-* delineações anatômicas;
-* delineações de lesões de csPCa;
-* informações clínicas;
-* recursos adicionais.
-
-Entre as informações clínicas disponíveis estão atributos como:
-
-* `patient_id`;
-* `study_id`;
-* `mri_date`;
-* `patient_age`;
-* `psa`;
-* `psad`;
-* `prostate_volume`;
-* `histopath_type`;
-* `lesion_PIRADS`;
-* `lesion_GS`;
-* `lesion_ISUP`;
-* `case_ISUP`;
-* `case_csPCa`;
-* `center`.
-
-> Os dados brutos do PI-CAI e os arquivos de labels não devem ser versionados diretamente no Git deste projeto.
-
----
-
-## 📁 Estrutura do projeto
+## Estrutura do projeto
 
 ```text
-TCC/
-│
-├── data/
-│   ├── raw/
-│   │   ├── PI-CAI/
-│   │   │   ├── fold_0/
-│   │   │   ├── fold_1/
-│   │   │   ├── fold_2/
-│   │   │   ├── fold_3/
-│   │   │   └── fold_4/
-│   │   │
-│   │   └── PI-CAI-labels/
-│   │       ├── additional_resources/
-│   │       ├── anatomical_delineations/
-│   │       ├── clinical_information/
-│   │       └── csPCa_lesion_delineations/
-│   │
-│   ├── processed/
-│   │   ├── images/
-│   │   ├── masks/
-│   │   └── slices/
-│   │
-│   └── features/
-│
+TCC_II/
+├── notebooks/
+│   ├── 01_data_preparation.ipynb
+│   ├── 02_segmentation_training.ipynb
+│   ├── 03_segmentation_evaluatin.ipynb
+│   ├── 04_segmentation_inference.ipynb
+│   ├── 05_radiomics.ipynb
+│   ├── 06_xgboost_classification_nao_rodar.ipynb
+│   ├── 06_xgboost_classification_reconstrucao_original.ipynb
+│   ├── 07_baseline_comparison.ipynb
+│   ├── 08_zonal_radiomics.ipynb
+│   ├── 09_zonal_classification.ipynb
+│   ├── 10_reference_radiomics.ipynb
+│   ├── 11_reference_comparison.ipynb
+│   ├── test.ipynb
 ├── src/
 │   ├── data/
+│   │   ├── paths.py
 │   │   ├── loader.py
-│   │   └── dataset.py
-│   │
+│   │   ├── mapping.py
+│   │   ├── splits.py
+│   │   ├── raw/
+│   │   │   ├── picai/
+│   │   │   ├── picai_labels/
+│   │   ├── processed/
+│   │   │   ├── whole_gland_2d/
+│   │   │   │   ├── images/
+│   │   │   │   ├── masks/
+│   │   │   ├── splits/
+│   │   ├── features/
 │   ├── preprocessing/
-│   │   ├── normalization.py
-│   │   └── preprocessing.py
-│   │
+│   │   ├── preprocessing.py
+│   │   ├── slicing.py
+│   │   ├── dataset_builder.py
 │   ├── segmentation/
-│   │   ├── unet.py
+│   │   ├── dataset.py
+│   │   ├── model.py
+│   │   ├── losses.py
+│   │   ├── metrics.py
 │   │   ├── train.py
-│   │   └── predict.py
-│   │
-│   ├── radiomics/
-│   │   └── extract.py
-│   │
-│   ├── classification/
-│   │   ├── xgboost_model.py
-│   │   └── baselines.py
-│   │
-│   └── evaluation/
-│       ├── segmentation_metrics.py
-│       └── classification_metrics.py
-│
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_visualization.ipynb
-│   ├── 03_preprocessing.ipynb
-│   ├── 04_unet_experiments.ipynb
-│   ├── 05_radiomics.ipynb
-│   └── 06_classification.ipynb
-│
-├── models/
-│   ├── unet/
-│   └── xgboost/
-│
+│   │   ├── inference.py
+│   ├── visualization/
+│       ├── visualization.py
 ├── results/
+│   ├── checkpoints/
 │   ├── segmentation/
-│   ├── radiomics/
-│   └── classification/
-│
-├── docs/
-│
+│   │   ├── predicted_masks/
+│   ├── classification/
+│   ├── classification_original_reconstruction/
+│   ├── baseline_comparison/
+│   ├── zonal_radiomics/
+│   ├── zonal_classification/
+│   ├── reference_radiomics/
+│   ├── reference_comparison/
 ├── README.md
-├── ROADMAP.md
-├── TODO.md
-└── .gitignore
 ```
 
----
+Dados brutos, intermediários, checkpoints e máscaras são recursos locais ou gerados pela execução; não se deve presumir que estejam disponíveis em um clone. A lógica de radiômica e classificação está nos notebooks; os módulos reutilizáveis estão em `src/`.
 
-## 🔬 Etapas do desenvolvimento
+## Dados e pré-processamento
 
-### 1. Organização dos dados
+Os caminhos centrais estão definidos em [src/data/paths.py](src/data/paths.py):
 
-Primeiramente serão organizados os arquivos do PI-CAI e seus respectivos labels.
+- Imagens: `src/data/raw/picai/`.
+- Labels: `src/data/raw/picai_labels/`.
+- Máscaras da glândula inteira: `anatomical_delineations/whole_gland/AI/`, dentro dos labels.
+- Informações clínicas: `clinical_information/marksheet.csv`, dentro dos labels.
+- Partições: `src/data/processed/splits/`.
 
-O objetivo é estabelecer uma relação confiável entre:
+A associação utiliza `patient_id` e `study_id`. Antes do processamento, são verificadas dimensões e propriedades espaciais, incluindo espaçamento, origem e direção.
 
-```text
-patient_id
-      ↓
-study_id
-      ↓
-imagem
-      ↓
-máscara
-      ↓
-informação clínica
-```
+O pré-processamento seleciona slices com próstata e duas fatias de contexto antes e depois da região, aplica normalização baseada nos pixels positivos e redimensiona para **256 × 256**. Imagens usam interpolação linear; máscaras usam vizinho mais próximo. O notebook de preparação registra **28.110 pares imagem–máscara**, armazenados como arrays NumPy.
 
----
+## Segmentação e radiômica
 
-### 2. Exploração e validação
+A U-Net recebe uma imagem T2W de um canal e produz logits para segmentação binária. O treinamento combina **BCE e Dice Loss**, com otimizador Adam. O checkpoint histórico é salvo em `results/checkpoints/unet_whole_gland_best.pth`. A avaliação inclui perda, Dice, Dice em slices positivos e IoU.
 
-Antes do treinamento, os arquivos serão carregados e visualizados para verificar:
+A extração radiômica usa o volume T2W original e a máscara 3D:
 
-* dimensões;
-* orientação;
-* espaçamento;
-* correspondência entre imagens e máscaras;
-* existência de casos incompletos;
-* alinhamento espacial.
+| Parâmetro | Valor |
+| --- | --- |
+| Tipo de imagem | Original |
+| Normalização | `normalize=True`, `normalizeScale=100` |
+| Discretização | `binWidth=5` |
+| Espaçamento de reamostragem | `[0.5, 0.5, 3.0]` mm |
+| Interpolação da imagem | B-spline |
+| Classes | firstorder, shape, GLCM, GLRLM, GLSZM, GLDM e NGTDM |
 
-Essa etapa é importante para evitar que problemas nos dados sejam confundidos posteriormente com problemas do modelo.
+São extraídas **107 características por região**. As tabelas locais atuais possuem 1.500 linhas cada:
 
----
+| Arquivo em `src/data/features/` | Conteúdo |
+| --- | --- |
+| `whole_gland_t2w_radiomics.csv` | Identificadores + 107 características da máscara predita |
+| `zonal_t2w_radiomics.csv` | Identificadores + 107 características de PZ + 107 de TZ |
+| `reference_whole_gland_t2w_radiomics.csv` | Identificadores + 107 da glândula de referência + 107 da união PZ/TZ |
 
-### 3. Pré-processamento
+As extrações permitem retomada por CSV e registram falhas. Nos experimentos zonais, confirme a fonte das anotações e os valores dos rótulos antes da execução. As máscaras são alinhadas à geometria T2W em coordenadas físicas; reamostragem não substitui registro ou inspeção visual.
 
-As imagens serão preparadas para utilização pela U-Net.
+## Execução dos notebooks
 
-A estratégia prevista inclui:
+Use um kernel com diretório de trabalho em `notebooks/`: vários arquivos calculam a raiz com `Path.cwd().parent`.
 
-* normalização;
-* padronização;
-* definição da região de interesse;
-* conversão dos volumes 3D em slices 2D;
-* associação entre imagem e máscara.
+| Notebook | Função |
+| --- | --- |
+| [01](notebooks/01_data_preparation.ipynb) | Inspeção, preparação dos slices e gravação da divisão original |
+| [02](notebooks/02_segmentation_training.ipynb) | Treinamento da U-Net com os dados processados |
+| [03](notebooks/03_segmentation_evaluatin.ipynb) | Avaliação do checkpoint; nome do arquivo preservado como está no projeto |
+| [04](notebooks/04_segmentation_inference.ipynb) | Inferência e geração das máscaras 3D |
+| [05](notebooks/05_radiomics.ipynb) | Extração radiômica com máscaras preditas |
+| [06 — reconstrução](notebooks/06_xgboost_classification_reconstrucao_original.ipynb) | Reconstrução histórica do XGBoost, com saídas separadas |
+| [07](notebooks/07_baseline_comparison.ipynb) | Regressão Logística e Random Forest; comparação com XGBoost arquivado |
+| [08](notebooks/08_zonal_radiomics.ipynb) | Extração de PZ e TZ usando máscaras de referência |
+| [09](notebooks/09_zonal_classification.ipynb) | Comparação de PZ, TZ, PZ + TZ e glândula predita na mesma coorte |
+| [10](notebooks/10_reference_radiomics.ipynb) | Extração da glândula de referência e união PZ/TZ; avaliação da sobreposição das máscaras |
+| [11](notebooks/11_reference_comparison.ipynb) | Comparação das seis representações na interseção dos casos disponíveis |
 
----
+`06_xgboost_classification_nao_rodar.ipynb` está preservado como histórico e não integra a sequência recomendada. A reconstrução original não recupera o histórico completo da busca de hiperparâmetros e não substitui uma nova avaliação com a divisão agrupada.
 
-### 4. Segmentação
+Antes de uma nova rodada experimental, configure consistentemente as partições, os checkpoints e os diretórios de saída em todas as etapas. Executar a sequência atual sem adaptação reutiliza a divisão original e pode sobrescrever artefatos históricos.
 
-Será investigada uma **U-Net 2D** para segmentação das regiões de interesse.
+## Ambiente
 
-A avaliação será realizada utilizando principalmente:
+O projeto utiliza Python, Jupyter, NumPy, pandas, matplotlib, SimpleITK, OpenCV, PyTorch, scikit-learn, XGBoost, joblib e PyRadiomics. CUDA é utilizada pela segmentação quando disponível.
 
-* Dice Score;
-* Intersection over Union (IoU).
+Há dois ambientes locais: `.venv` e `.venv-radiomics`. O notebook 05 documenta um ambiente dedicado de **Python 3.8** para radiômica; os notebooks 08 e 10 seguem esse ambiente. Os demais utilizam o ambiente de treinamento/classificação. Selecione o kernel correspondente antes de executar cada notebook.
 
----
+O repositório ainda não contém `requirements.txt`, `pyproject.toml` ou um arquivo de ambiente com versões fixadas. A instalação reproduzível das dependências permanece pendente; os ambientes locais não são fornecidos pelo Git.
 
-### 5. Radiômica
+## Resultados e interpretação
 
-Após a segmentação, serão extraídas características quantitativas das regiões de interesse.
+Os artefatos incluem métricas CSV, predições por exame, configurações JSON, modelos e figuras ROC, Precision–Recall e matrizes de confusão. Os principais pontos de consulta são:
 
-As principais categorias consideradas inicialmente são:
+- [Métricas históricas de segmentação](results/segmentation/unet_whole_gland_metrics.csv).
+- [Comparação de baselines](results/baseline_comparison/test_metrics.csv).
+- [Comparação zonal](results/zonal_classification/test_metrics.csv).
+- [Comparação com máscaras de referência](results/reference_comparison/test_metrics.csv).
+- [Qualidade da união PZ/TZ versus glândula inteira](results/reference_radiomics/union_vs_whole_gland_quality.csv).
 
-* características de primeira ordem;
-* características de forma;
-* características de textura.
+Nos notebooks comparativos, os candidatos são selecionados por ROC-AUC de validação e os limiares pelo índice de Youden na validação. As métricas de teste incluem ROC-AUC, Average Precision (coluna `pr_auc`), sensibilidade, especificidade, precisão, F1, acurácia e acurácia balanceada. Imputação e padronização, quando aplicáveis, são ajustadas no treino.
 
-A extração será realizada utilizando o **PyRadiomics**.
+As comparações exigem os mesmos casos e partições. As máscaras zonais são anotações anatômicas de referência, enquanto a pipeline original utiliza máscaras preditas: diferenças de desempenho não podem ser atribuídas apenas à região. A união PZ/TZ também não é automaticamente equivalente à glândula inteira.
 
----
+Além da sobreposição de pacientes na divisão original, o conjunto de teste já foi inspecionado em análises anteriores. Os experimentos adicionais são exploratórios e não constituem validação externa ou confirmação independente.
 
-### 6. Seleção de features
+## Próximos passos
 
-Como a radiômica pode gerar grande quantidade de atributos, será realizada uma etapa de redução e seleção.
+- Consolidar o uso da divisão agrupada por paciente em toda a pipeline.
+- Retreinar e reavaliar a segmentação, regenerar as máscaras e recalcular os experimentos dependentes em diretórios separados.
+- Consolidar a avaliação volumétrica 3D e seus relatórios de falhas.
+- Registrar versões das dependências e configurações para reprodução.
+- Consolidar tabelas e figuras do TCC, distinguindo resultados históricos dos reavaliados.
 
-Inicialmente serão investigadas estratégias como:
-
-* análise de correlação;
-* remoção de atributos redundantes;
-* RFE;
-* importância das features pelo XGBoost.
-
-A seleção deverá ser realizada de maneira compatível com a estratégia de validação, evitando data leakage.
-
----
-
-### 7. Classificação
-
-As características selecionadas serão utilizadas como entrada para o **XGBoost**.
-
-O modelo terá como objetivo classificar os casos quanto à presença de **csPCa**.
-
-Também poderão ser utilizados modelos como:
-
-* Random Forest;
-* SVM.
-
-como baselines para comparação.
-
----
-
-## 📈 Avaliação
-
-### Segmentação
-
-Serão consideradas:
-
-| Métrica    | Objetivo                          |
-| ---------- | --------------------------------- |
-| Dice Score | Avaliar sobreposição das máscaras |
-| IoU        | Avaliar interseção sobre união    |
-
-### Classificação
-
-Serão consideradas:
-
-| Métrica        | Objetivo                            |
-| -------------- | ----------------------------------- |
-| ROC-AUC        | Avaliar capacidade discriminativa   |
-| Sensibilidade  | Avaliar detecção dos positivos      |
-| Especificidade | Avaliar identificação dos negativos |
-| F1-Score       | Equilibrar precisão e recall        |
-
-Também serão analisados:
-
-* matriz de confusão;
-* curva ROC;
-* curva Precision-Recall;
-* falsos positivos;
-* falsos negativos.
-
----
-
-## 🔒 Validação e prevenção de Data Leakage
-
-A estratégia de validação será definida durante o desenvolvimento experimental.
-
-A princípio, será investigada a utilização de **5-Fold Cross Validation**, considerando a distribuição dos casos.
-
-Cuidados importantes:
-
-* não misturar casos do mesmo paciente entre treino e validação;
-* realizar seleção de features somente utilizando os dados de treinamento;
-* evitar que informações do conjunto de teste sejam utilizadas durante o treinamento;
-* considerar a natureza multicêntrica do PI-CAI.
-
----
-
-## 🖥️ Ambiente computacional
-
-O desenvolvimento será realizado prioritariamente em ambiente local utilizando:
-
-* **CPU:** Intel Core i7-7700;
-* **RAM:** 16 GB;
-* **GPU:** NVIDIA RTX 3070.
-
-A GPU será utilizada principalmente para treinamento e experimentação com a U-Net.
-
-O processamento poderá ser dividido entre:
-
-```text
-CPU
-→ organização dos dados
-→ pré-processamento
-→ radiômica
-→ XGBoost
-
-GPU
-→ treinamento da U-Net
-→ inferência da U-Net
-```
-
----
-
-## 🛠️ Tecnologias previstas
-
-### Linguagem
-
-* Python
-
-### Deep Learning
-
-* PyTorch
-* MONAI
-
-### Processamento de imagens
-
-* SimpleITK
-* NiBabel
-
-### Radiômica
-
-* PyRadiomics
-
-### Machine Learning
-
-* XGBoost
-* Scikit-learn
-
-### Desenvolvimento
-
-* VS Code
-* Git
-* GitHub
-
----
-
-## 📂 Controle de versões
-
-O Git será utilizado para versionar:
-
-* código;
-* notebooks;
-* configurações;
-* documentação;
-* scripts;
-* resultados selecionados.
-
-Os dados brutos do PI-CAI, modelos grandes e arquivos intermediários não deverão ser armazenados diretamente no repositório.
-
----
-
-## 📚 Documentação do projeto
-
-A documentação será dividida em três arquivos principais:
-
-### `README.md`
-
-Apresenta:
-
-* objetivo;
-* arquitetura;
-* dataset;
-* tecnologias;
-* estrutura do projeto.
-
-### `ROADMAP.md`
-
-Apresenta:
-
-* visão geral;
-* etapas;
-* dependências;
-* evolução planejada.
-
-### `TODO.md`
-
-Apresenta:
-
-* tarefas;
-* experimentos;
-* itens pendentes;
-* progresso do desenvolvimento.
-
----
-
-## 🚧 Status atual
-
-### Concluído
-
-* [x] Definição da proposta metodológica
-* [x] Download/obtenção do repositório de labels
-* [x] Organização inicial do projeto
-* [x] Identificação da estrutura dos dados
-* [x] Definição da pipeline inicial
-
-### Em andamento
-
-* [ ] Download completo dos dados
-* [ ] Organização dos 5 folds
-* [ ] Implementação do data loader
-* [ ] Validação das imagens e máscaras
-* [ ] Visualização dos casos
-
-### Próximo marco
-
-> **Carregar um caso completo do PI-CAI e visualizar imagem + máscara corretamente alinhadas.**
-
-Esse será o primeiro teste importante da pipeline.
-
----
-
-## 📌 Princípio de desenvolvimento
-
-O projeto será desenvolvido de forma incremental.
-
-```text
-Organizar
-   ↓
-Carregar
-   ↓
-Visualizar
-   ↓
-Validar
-   ↓
-Treinar
-   ↓
-Avaliar
-   ↓
-Otimizar
-```
-
-A prioridade inicial não será obter o melhor resultado possível, mas garantir que **cada etapa esteja funcionando corretamente antes de avançar para a seguinte**.
-
----
-
-## 📖 Referências principais
-
-* PI-CAI — Prostate Imaging: Cancer AI.
-* Grand Challenge.
-* Ronneberger, O.; Fischer, P.; Brox, T. — *U-Net: Convolutional Networks for Biomedical Image Segmentation*.
-* Chen, T.; Guestrin, C. — *XGBoost: A Scalable Tree Boosting System*.
-* van Griethuysen, J. J. M. et al. — *Computational Radiomics System to Decode the Phenotype of Tumors*.
-
----
-
-## ⚠️ Observação
-
-Este projeto possui finalidade **acadêmica e experimental**. Os modelos desenvolvidos não devem ser considerados ferramentas clínicas ou utilizados para diagnóstico médico sem validação apropriada, aprovação ética e avaliação clínica independente.
+Projeto de finalidade acadêmica e experimental, sem validação para uso clínico.

@@ -118,14 +118,14 @@
     "Logistic Regression": {
       "configuration": "C=0.1",
       "validation_roc_auc": 0.71875,
-      "threshold": 0.4697924880173413,
-      "training_seconds": 0.029845400000340305
+      "threshold": 0.4697909147390813,
+      "training_seconds": 0.14753900000141584
     },
     "Random Forest": {
       "configuration": "trees=150, depth=10, leaf=5",
       "validation_roc_auc": 0.7124417701863355,
-      "threshold": 0.48969590189805834,
-      "training_seconds": 0.31732629999896744
+      "threshold": 0.48969590189805823,
+      "training_seconds": 0.649712800000998
     }
   }
 }
