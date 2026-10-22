@@ -1,9 +1,10 @@
 # Picai
 .DS_Store
-/src/data/raw/
-/src/data/processed/
+/src/data/raw/picai
+/src/data/processed/whole_gland_2d
+/src/data/processed/whole_gland_2d_test
+/src/data/processed/whole_gland_predictions_grouped_v2
 
-/results/checkpoints/
 /results/segmentation/predicted_masks/
 /results/segmentation/predicted_masks_batch_test/
 /results/segmentation/predicted_masks_test/
