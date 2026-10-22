@@ -1,0 +1,91 @@
+{
+  "random_state": 42,
+  "zonal_features": "c:\\Users\\Luiz Trindade\\Documents\\penguin-adventure\\TCC_II\\src\\data\\features\\zonal_t2w_radiomics.csv",
+  "whole_gland_features": "c:\\Users\\Luiz Trindade\\Documents\\penguin-adventure\\TCC_II\\src\\data\\features\\whole_gland_t2w_radiomics.csv",
+  "clinical_labels": "c:\\Users\\Luiz Trindade\\Documents\\penguin-adventure\\TCC_II\\src\\data\\raw\\picai_labels\\clinical_information\\marksheet.csv",
+  "splits": "c:\\Users\\Luiz Trindade\\Documents\\penguin-adventure\\TCC_II\\src\\data\\processed\\splits\\patient_splits.csv",
+  "shared_cohort_cases": 1500,
+  "regions": {
+    "PZ": 107,
+    "TZ": 107,
+    "PZ + TZ": 214,
+    "Whole gland (predicted mask)": 107
+  },
+  "selection_metric": "validation_roc_auc",
+  "threshold_method": "validation_youden_index",
+  "mask_provenance": "PZ/TZ reference masks vs whole-gland predicted masks",
+  "selected_models": {
+    "PZ / Logistic Regression": {
+      "configuration": "C=0.1",
+      "validation_roc_auc": 0.6660520186335404,
+      "threshold": 0.4291076203554572,
+      "training_seconds": 0.1048532000004343
+    },
+    "PZ / Random Forest": {
+      "configuration": "trees=150,depth=None,leaf=2",
+      "validation_roc_auc": 0.7287461180124224,
+      "threshold": 0.3864444444444445,
+      "training_seconds": 0.4015042999999423
+    },
+    "PZ / XGBoost": {
+      "configuration": "trees=150,depth=3",
+      "validation_roc_auc": 0.6686723602484472,
+      "threshold": 0.4152059257030487,
+      "training_seconds": 0.34975180000037653
+    },
+    "TZ / Logistic Regression": {
+      "configuration": "C=0.01",
+      "validation_roc_auc": 0.7053571428571429,
+      "threshold": 0.5183538880681302,
+      "training_seconds": 0.0349065000009432
+    },
+    "TZ / Random Forest": {
+      "configuration": "trees=150,depth=5,leaf=5",
+      "validation_roc_auc": 0.7113742236024845,
+      "threshold": 0.5625212657873834,
+      "training_seconds": 0.3345891000008123
+    },
+    "TZ / XGBoost": {
+      "configuration": "trees=100,depth=2",
+      "validation_roc_auc": 0.6984666149068324,
+      "threshold": 0.5658454298973083,
+      "training_seconds": 0.1541722000001755
+    },
+    "PZ + TZ / Logistic Regression": {
+      "configuration": "C=0.01",
+      "validation_roc_auc": 0.7167119565217391,
+      "threshold": 0.4534262887714864,
+      "training_seconds": 0.0739661999996315
+    },
+    "PZ + TZ / Random Forest": {
+      "configuration": "trees=150,depth=None,leaf=5",
+      "validation_roc_auc": 0.7364130434782609,
+      "threshold": 0.4246566655738482,
+      "training_seconds": 0.35103949999938777
+    },
+    "PZ + TZ / XGBoost": {
+      "configuration": "trees=150,depth=3",
+      "validation_roc_auc": 0.7197204968944099,
+      "threshold": 0.41524192690849304,
+      "training_seconds": 0.7000074000006862
+    },
+    "Whole gland (predicted mask) / Logistic Regression": {
+      "configuration": "C=0.1",
+      "validation_roc_auc": 0.71875,
+      "threshold": 0.4697909147390813,
+      "training_seconds": 0.03719929999897431
+    },
+    "Whole gland (predicted mask) / Random Forest": {
+      "configuration": "trees=150,depth=None,leaf=5",
+      "validation_roc_auc": 0.7076863354037267,
+      "threshold": 0.503533368048074,
+      "training_seconds": 0.3306453999994119
+    },
+    "Whole gland (predicted mask) / XGBoost": {
+      "configuration": "trees=150,depth=3",
+      "validation_roc_auc": 0.7125388198757764,
+      "threshold": 0.4786553978919983,
+      "training_seconds": 0.34775360000094224
+    }
+  }
+}

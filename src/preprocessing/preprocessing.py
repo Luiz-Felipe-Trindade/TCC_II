@@ -41,37 +41,35 @@ def resize_image_and_mask(
     """
     Resize an MRI slice and its segmentation mask.
 
-    Linear interpolation is used for the image and nearest-neighbor
-    interpolation for the mask to preserve discrete labels.
+    Linear interpolation is used for the image.
+    Nearest-neighbor interpolation is used for the mask.
 
     Parameters
     ----------
     image : np.ndarray
-        Two-dimensional MRI slice.
+        Two-dimensional MRI image.
     mask : np.ndarray
         Corresponding binary segmentation mask.
     size : tuple[int, int], default=(256, 256)
-        Target image size in pixels.
+        Target image size.
 
     Returns
     -------
-    image_resized : np.ndarray
-        Resized MRI image.
-    mask_resized : np.ndarray
-        Resized binary segmentation mask.
+    tuple[np.ndarray, np.ndarray]
+        Resized image and binary mask.
     """
-    image_resized = cv2.resize(
+    resized_image = cv2.resize(
         image,
         size,
         interpolation=cv2.INTER_LINEAR,
     )
 
-    mask_resized = cv2.resize(
+    resized_mask = cv2.resize(
         mask.astype(np.uint8),
         size,
         interpolation=cv2.INTER_NEAREST,
     )
 
-    mask_resized = (mask_resized > 0).astype(np.uint8)
+    resized_mask = (resized_mask > 0).astype(np.uint8)
 
-    return image_resized, mask_resized
+    return resized_image, resized_mask

@@ -39,7 +39,7 @@ def get_image_metadata(
 def validate_image_geometry(
     image_a: sitk.Image,
     image_b: sitk.Image,
-    tolerance: float = 1e-4,
+    tolerance: float = 1e-3,
 ) -> bool:
     """
     Check whether two medical images have compatible geometry.

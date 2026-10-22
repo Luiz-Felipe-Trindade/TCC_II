@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 
 def plot_slice_with_mask(
@@ -10,17 +11,6 @@ def plot_slice_with_mask(
 ) -> None:
     """
     Display a volume slice with its segmentation mask overlay.
-
-    Parameters
-    ----------
-    image : np.ndarray
-        Three-dimensional MRI volume.
-    mask : np.ndarray
-        Three-dimensional segmentation mask.
-    slice_index : int
-        Slice index to display.
-    alpha : float, default=0.3
-        Mask transparency.
     """
     plt.figure(figsize=(8, 8))
 
@@ -41,20 +31,7 @@ def compare_original_and_processed(
     alpha: float = 0.3,
 ) -> None:
     """
-    Compare the original image/mask pair with the processed pair.
-
-    Parameters
-    ----------
-    original_image : np.ndarray
-        Original MRI slice.
-    original_mask : np.ndarray
-        Original segmentation mask.
-    processed_image : np.ndarray
-        Processed MRI slice.
-    processed_mask : np.ndarray
-        Processed segmentation mask.
-    alpha : float, default=0.3
-        Mask transparency.
+    Compare the original image and mask with the processed versions.
     """
     figure, axes = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -67,6 +44,65 @@ def compare_original_and_processed(
     axes[1].imshow(processed_mask, alpha=alpha)
     axes[1].set_title("Processed")
     axes[1].axis("off")
+
+    plt.tight_layout()
+    plt.show()
+    
+def plot_segmentation_prediction(
+    image: torch.Tensor,
+    mask: torch.Tensor,
+    logits: torch.Tensor,
+    threshold: float = 0.5,
+) -> None:
+    """
+    Plot MRI image, ground-truth mask, and predicted mask.
+    """
+    image_np = image.squeeze().cpu().numpy()
+    mask_np = mask.squeeze().cpu().numpy()
+
+    probability = torch.sigmoid(logits)
+    prediction = (
+        probability >= threshold
+    ).float()
+
+    prediction_np = (
+        prediction.squeeze().cpu().numpy()
+    )
+
+    figure, axes = plt.subplots(
+        1,
+        3,
+        figsize=(15, 5),
+    )
+
+    axes[0].imshow(
+        image_np,
+        cmap="gray",
+    )
+    axes[0].set_title("T2W MRI")
+
+    axes[1].imshow(
+        image_np,
+        cmap="gray",
+    )
+    axes[1].imshow(
+        mask_np,
+        alpha=0.4,
+    )
+    axes[1].set_title("Ground Truth")
+
+    axes[2].imshow(
+        image_np,
+        cmap="gray",
+    )
+    axes[2].imshow(
+        prediction_np,
+        alpha=0.4,
+    )
+    axes[2].set_title("Prediction")
+
+    for axis in axes:
+        axis.axis("off")
 
     plt.tight_layout()
     plt.show()

@@ -1,0 +1,97 @@
+region,model,configuration,validation_roc_auc,training_seconds
+PZ,Logistic Regression,C=0.01,0.6393711419753086,0.06786689999989903
+PZ,Logistic Regression,C=0.1,0.6434220679012346,0.037582299999940005
+PZ,Logistic Regression,C=1.0,0.6515239197530865,0.06174819999978354
+PZ,Logistic Regression,C=10.0,0.658275462962963,0.09347870000010516
+PZ,Random Forest,"trees=150,depth=5,leaf=2",0.646508487654321,0.31809179999982007
+PZ,Random Forest,"trees=150,depth=5,leaf=5",0.6529706790123457,0.3173544999999649
+PZ,Random Forest,"trees=150,depth=None,leaf=2",0.6643518518518519,0.5065037999997912
+PZ,Random Forest,"trees=150,depth=None,leaf=5",0.6638695987654321,0.3545070999998643
+PZ,Random Forest,"trees=300,depth=5,leaf=2",0.6492091049382717,0.628490900000088
+PZ,Random Forest,"trees=300,depth=5,leaf=5",0.6535493827160493,0.5951340999999957
+PZ,Random Forest,"trees=300,depth=None,leaf=2",0.6565393518518517,0.6342021999998906
+PZ,Random Forest,"trees=300,depth=None,leaf=5",0.6604938271604939,0.6714515000003303
+PZ,XGBoost,"trees=100,depth=2",0.6311728395061729,0.3564605000001393
+PZ,XGBoost,"trees=100,depth=3",0.6373456790123457,0.22358239999994112
+PZ,XGBoost,"trees=150,depth=2",0.6304012345679013,0.21300079999991794
+PZ,XGBoost,"trees=150,depth=3",0.6355131172839507,0.3924733000003471
+TZ,Logistic Regression,C=0.01,0.6639660493827161,0.023577299999942625
+TZ,Logistic Regression,C=0.1,0.6648341049382717,0.0381081999998969
+TZ,Logistic Regression,C=1.0,0.6612654320987653,0.05519189999995433
+TZ,Logistic Regression,C=10.0,0.6588541666666666,0.08245790000000852
+TZ,Random Forest,"trees=150,depth=5,leaf=2",0.669560185185185,0.2998595999997633
+TZ,Random Forest,"trees=150,depth=5,leaf=5",0.6630979938271605,0.5119481000001542
+TZ,Random Forest,"trees=150,depth=None,leaf=2",0.673900462962963,0.41968679999990854
+TZ,Random Forest,"trees=150,depth=None,leaf=5",0.6730324074074074,0.42523679999976594
+TZ,Random Forest,"trees=300,depth=5,leaf=2",0.6653163580246914,0.6753708000001097
+TZ,Random Forest,"trees=300,depth=5,leaf=5",0.6612654320987654,0.8417782999999872
+TZ,Random Forest,"trees=300,depth=None,leaf=2",0.6723572530864197,0.84197660000018
+TZ,Random Forest,"trees=300,depth=None,leaf=5",0.6774691358024691,0.8350465000003169
+TZ,XGBoost,"trees=100,depth=2",0.6538387345679013,0.17563239999981306
+TZ,XGBoost,"trees=100,depth=3",0.6579861111111112,0.2232957000001079
+TZ,XGBoost,"trees=150,depth=2",0.6593364197530864,0.22822320000022955
+TZ,XGBoost,"trees=150,depth=3",0.6634837962962963,0.2886643000001641
+PZ + TZ,Logistic Regression,C=0.01,0.6708140432098766,0.0679416999996647
+PZ + TZ,Logistic Regression,C=0.1,0.6677276234567902,0.0888916000003519
+PZ + TZ,Logistic Regression,C=1.0,0.6676311728395061,0.10738140000012208
+PZ + TZ,Logistic Regression,C=10.0,0.6762152777777777,0.23469429999977365
+PZ + TZ,Random Forest,"trees=150,depth=5,leaf=2",0.6723572530864197,0.3314832999999453
+PZ + TZ,Random Forest,"trees=150,depth=5,leaf=5",0.6739969135802469,0.3266126999997141
+PZ + TZ,Random Forest,"trees=150,depth=None,leaf=2",0.6793016975308642,0.39476269999977376
+PZ + TZ,Random Forest,"trees=150,depth=None,leaf=5",0.6820987654320988,0.38655900000003385
+PZ + TZ,Random Forest,"trees=300,depth=5,leaf=2",0.6669560185185186,0.5654438000001392
+PZ + TZ,Random Forest,"trees=300,depth=5,leaf=5",0.6706211419753085,0.5960408999999345
+PZ + TZ,Random Forest,"trees=300,depth=None,leaf=2",0.6673418209876543,0.6698817000001327
+PZ + TZ,Random Forest,"trees=300,depth=None,leaf=5",0.6821952160493826,0.591608400000041
+PZ + TZ,XGBoost,"trees=100,depth=2",0.6657021604938271,0.28394829999979265
+PZ + TZ,XGBoost,"trees=100,depth=3",0.6680169753086419,0.44457420000026104
+PZ + TZ,XGBoost,"trees=150,depth=2",0.665991512345679,0.41970409999976255
+PZ + TZ,XGBoost,"trees=150,depth=3",0.6709104938271605,0.6289870000000519
+Whole gland (predicted mask),Logistic Regression,C=0.01,0.6462191358024691,0.032445800000004965
+Whole gland (predicted mask),Logistic Regression,C=0.1,0.6508487654320988,0.04406859999971857
+Whole gland (predicted mask),Logistic Regression,C=1.0,0.6247106481481481,0.04271250000010696
+Whole gland (predicted mask),Logistic Regression,C=10.0,0.6010802469135802,0.07778490000009697
+Whole gland (predicted mask),Random Forest,"trees=150,depth=5,leaf=2",0.6695601851851852,0.3181262999996761
+Whole gland (predicted mask),Random Forest,"trees=150,depth=5,leaf=5",0.663966049382716,0.36326150000013513
+Whole gland (predicted mask),Random Forest,"trees=150,depth=None,leaf=2",0.6630979938271605,0.3150636999998824
+Whole gland (predicted mask),Random Forest,"trees=150,depth=None,leaf=5",0.6609760802469137,0.31016490000001795
+Whole gland (predicted mask),Random Forest,"trees=300,depth=5,leaf=2",0.6616512345679012,0.5706135000000359
+Whole gland (predicted mask),Random Forest,"trees=300,depth=5,leaf=5",0.660204475308642,0.561605000000327
+Whole gland (predicted mask),Random Forest,"trees=300,depth=None,leaf=2",0.6514756944444445,0.5774256999998215
+Whole gland (predicted mask),Random Forest,"trees=300,depth=None,leaf=5",0.6609760802469136,0.598247899999933
+Whole gland (predicted mask),XGBoost,"trees=100,depth=2",0.6507523148148148,0.1444335000001047
+Whole gland (predicted mask),XGBoost,"trees=100,depth=3",0.6512345679012346,0.21108719999983805
+Whole gland (predicted mask),XGBoost,"trees=150,depth=2",0.6507523148148148,0.2079068999996707
+Whole gland (predicted mask),XGBoost,"trees=150,depth=3",0.6476658950617284,0.2982379000000037
+Whole gland (reference mask),Logistic Regression,C=0.01,0.6264467592592593,0.036296499999934895
+Whole gland (reference mask),Logistic Regression,C=0.1,0.6422646604938271,0.04714509999985239
+Whole gland (reference mask),Logistic Regression,C=1.0,0.6359953703703703,0.04170799999974406
+Whole gland (reference mask),Logistic Regression,C=10.0,0.6232638888888888,0.06925020000016957
+Whole gland (reference mask),Random Forest,"trees=150,depth=5,leaf=2",0.6392746913580246,0.33652329999995345
+Whole gland (reference mask),Random Forest,"trees=150,depth=5,leaf=5",0.6341628086419753,0.29477189999988695
+Whole gland (reference mask),Random Forest,"trees=150,depth=None,leaf=2",0.6453993055555555,0.3031043999999383
+Whole gland (reference mask),Random Forest,"trees=150,depth=None,leaf=5",0.6335841049382717,0.3006977000000006
+Whole gland (reference mask),Random Forest,"trees=300,depth=5,leaf=2",0.6417824074074074,0.585473600000114
+Whole gland (reference mask),Random Forest,"trees=300,depth=5,leaf=5",0.6399498456790124,0.5815373000000363
+Whole gland (reference mask),Random Forest,"trees=300,depth=None,leaf=2",0.6477623456790123,0.6186587000001964
+Whole gland (reference mask),Random Forest,"trees=300,depth=None,leaf=5",0.6349344135802468,0.6006158000000141
+Whole gland (reference mask),XGBoost,"trees=100,depth=2",0.6292438271604939,0.1384290000000874
+Whole gland (reference mask),XGBoost,"trees=100,depth=3",0.6322337962962963,0.20738859999983106
+Whole gland (reference mask),XGBoost,"trees=150,depth=2",0.6248070987654322,0.20497240000031525
+Whole gland (reference mask),XGBoost,"trees=150,depth=3",0.6323302469135803,0.29742650000025606
+PZ/TZ union (reference zones),Logistic Regression,C=0.01,0.6413001543209876,0.03951390000020183
+PZ/TZ union (reference zones),Logistic Regression,C=0.1,0.660204475308642,0.04874930000005406
+PZ/TZ union (reference zones),Logistic Regression,C=1.0,0.6544174382716049,0.04437310000002981
+PZ/TZ union (reference zones),Logistic Regression,C=10.0,0.6484375,0.12115330000005997
+PZ/TZ union (reference zones),Random Forest,"trees=150,depth=5,leaf=2",0.6464120370370369,0.3423995000002833
+PZ/TZ union (reference zones),Random Forest,"trees=150,depth=5,leaf=5",0.6424575617283951,0.3108055000002423
+PZ/TZ union (reference zones),Random Forest,"trees=150,depth=None,leaf=2",0.6231674382716049,0.3126554999998916
+PZ/TZ union (reference zones),Random Forest,"trees=150,depth=None,leaf=5",0.6341628086419753,0.29708430000027874
+PZ/TZ union (reference zones),Random Forest,"trees=300,depth=5,leaf=2",0.6472800925925926,0.6058468000001085
+PZ/TZ union (reference zones),Random Forest,"trees=300,depth=5,leaf=5",0.6368634259259259,0.6028934000000845
+PZ/TZ union (reference zones),Random Forest,"trees=300,depth=None,leaf=2",0.6281346450617284,0.5649766000001364
+PZ/TZ union (reference zones),Random Forest,"trees=300,depth=None,leaf=5",0.630883487654321,0.5843669000000773
+PZ/TZ union (reference zones),XGBoost,"trees=100,depth=2",0.6233603395061729,0.133748100000048
+PZ/TZ union (reference zones),XGBoost,"trees=100,depth=3",0.6328125,0.20413060000009864
+PZ/TZ union (reference zones),XGBoost,"trees=150,depth=2",0.6278935185185185,0.20454100000006292
+PZ/TZ union (reference zones),XGBoost,"trees=150,depth=3",0.6382137345679012,0.29791949999980716
